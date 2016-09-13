@@ -1,0 +1,35 @@
+<html>
+  <title> My First Cricket Match Simulation </title>
+  <head>
+    <script type="text/javascript" src="game.js"></script>
+  </head>
+  <body>
+    You're playing as INDIA.
+
+    Time for a toss.<br/>
+    Choose an option: <br/>
+    <button type="button" onclick="match.start(team_india, 0)">HEADS</button>
+    <button type="button" onclick="match.start(team_india, 1)">TAILS</button>
+
+    <span id="cs-toss-info"></span>
+
+    <section id="cs-playfield" style="display: none;">
+      <button id="cs-play" style="display: none;" onclick="match.play()">BOWL</button>
+      <div id="cs-playfield-over-details" style="height: 200px; overflow: scroll;">
+        
+      </div>
+
+      <div id="cs-playfield-scorecard">
+        
+      </div>
+
+      <div id="cs-playfield-batsmen-details">
+        
+      </div>
+
+      <div id="cs-playfield-bowler-details">
+        
+      </div>
+    </section>
+  </body>
+</html>
