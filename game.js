@@ -74,6 +74,10 @@ function Player(args) {
     return (matchState.runs / (Math.floor(matchState.ballsBowled / 6))).toFixed(2);   // incomplete formula
   }
 
+  function canBowlMore() {
+    return matchState.ballsBowled < 55;   // one-day match, can bowl max of 10 overs
+  }
+
   function getPrintableBatsmanStats() {
     var printableStats = name +
                           (isOnStrike() ? "* " : " ") +
@@ -112,6 +116,7 @@ function Player(args) {
     isYetToBat: isYetToBat,
     isOnStrike: isOnStrike,
     setStrike: setStrike,
+    canBowlMore: canBowlMore,
     getPrintableBatsmanStats: getPrintableBatsmanStats,
     getPrintableBowlerStats: getPrintableBowlerStats
   };
@@ -233,11 +238,16 @@ function Match(ground, team1, team2) {
     if (ball.count === 0) {
       selectBatsmen();
     }
-    if (ball.count % 6 === 0) {
+
+    if (ball.count % 6 === 0 && ball.count < (50 - 1) * 6 + 1) {
       startAnOver();
     }
 
-    bowlABall();
+    if (ball.count < (50 * 6)) {
+      bowlABall();
+    }
+
+    return;
   }
 
   function start(team, call) {
@@ -256,8 +266,15 @@ function Match(ground, team1, team2) {
       selectBowler();
     }
 
-    ball.bowler = teamBowling.players[selection - 1];
-    viewModel.updatePlayingPlayersInfo(ball, teamBatting, teamBowling);
+    // check if can bowl more overs
+    var selectedBowler = teamBowling.players[selection - 1];
+    if (selectedBowler.canBowlMore()) {
+      ball.bowler = selectedBowler;
+      viewModel.updatePlayingPlayersInfo(ball, teamBatting, teamBowling);
+      return;
+    } else {
+      selectBowler();
+    }
   }
 
   function selectBatsmen() {
@@ -316,7 +333,7 @@ function Match(ground, team1, team2) {
     ball.bowler.matchState.ballsBowled++;
     teamBatting.matchState.ballsBowled++;
 
-    var result = getAResultForBall(2, ball.batsman1.batting.aggression);
+    var result = getAResultForBall(2, ball.batsman1.batting, ball.bowler.bowling);
     
     if (result !== 7) {
       ball.runs = result;
@@ -362,7 +379,7 @@ function Match(ground, team1, team2) {
 
   }
 
-  function getAResultForBall(aggressionMode, aggressionBatsman) {
+  function getAResultForBall(aggressionMode, batsmanSkills, bowlerSkills) {
     var EXTRA_DEFENSIVE = 0;
     var DEFENSIVE = 1;
     var NORMAL = 2;
@@ -373,11 +390,12 @@ function Match(ground, team1, team2) {
 
     var possibleOutcomes = [0, 1, 2, 3, 4, 6, 7];
     // probabilistic frequency of result in order [0, 1, 2, 3, 4, 6, W]
+    // TODO: Still experimental
     results[EXTRA_DEFENSIVE]  = [10, 10, 8, 4, 2, 1, 1];
     results[DEFENSIVE]        = [8, 8, 8, 4, 2, 1, 1];
     results[NORMAL]           = [35, 51, 5, 1, 6, 2, 2];
-    results[AGGRESSIVE]       = [5, 8, 10, 9, 14, 15, 2];
-    results[ALL_OUT_ATTACK]   = [2, 6, 8, 10, 15, 18, 3];
+    results[AGGRESSIVE]       = [33, 40, 5, 2, 8, 2, 2.2];
+    results[ALL_OUT_ATTACK]   = [15, 6, 8, 10, 8, 10, 10];
 
     function rand(min, max) {
         return Math.random() * (max - min) + min;
@@ -403,11 +421,58 @@ function Match(ground, team1, team2) {
       // end of function
     }
 
+    function normalizeAdjustment(adjustment) {
+      if (adjustment < 0) {
+        adjustment = Math.abs(adjustment) > 50 ? 100 - Math.abs(adjustment) : Math.abs(adjustment);
+      }
+
+      return adjustment;
+    }
+
     var adjustedWeights = [ ];
     results[aggressionMode].forEach(function(weight, index){
-      adjustedWeights[index] = parseFloat((weight * 100 / aggressionBatsman).toFixed(2));
+      var adjustment = (batsmanSkills.skill + batsmanSkills.aggression - bowlerSkills.skill);
+      adjustment = normalizeAdjustment(adjustment);
+      switch(index) {
+        case 0:
+          adjustment = (batsmanSkills.skill + batsmanSkills.aggression * 2 - bowlerSkills.skill);
+          adjustment = normalizeAdjustment(adjustment);
+          adjustedWeights[index] = parseFloat((weight * (adjustment / 1)).toFixed(2));
+          break;
+        case 1:
+          adjustment = (batsmanSkills.skill + batsmanSkills.aggression - bowlerSkills.skill);
+          adjustment = normalizeAdjustment(adjustment);
+          adjustedWeights[index] = parseFloat((weight * (adjustment / 1)).toFixed(2));
+          break;
+        case 2:
+          adjustment = (batsmanSkills.skill + batsmanSkills.aggression - bowlerSkills.skill);
+          adjustment = normalizeAdjustment(adjustment);
+          adjustedWeights[index] = parseFloat((weight * (adjustment / 1)).toFixed(2));
+          break;
+        case 3:
+          adjustment = (batsmanSkills.skill + batsmanSkills.aggression * 1.1 - bowlerSkills.skill);
+          adjustment = normalizeAdjustment(adjustment);
+          adjustedWeights[index] = parseFloat((weight * (adjustment / 1)).toFixed(2));
+          break;
+        case 4:
+          adjustment = (batsmanSkills.skill + batsmanSkills.aggression * 1.5 - bowlerSkills.skill);
+          adjustment = normalizeAdjustment(adjustment);
+          adjustedWeights[index] = parseFloat((weight * (adjustment / 1)).toFixed(2));
+          break;
+        case 5:
+          adjustment = (batsmanSkills.skill + batsmanSkills.aggression * 2 - bowlerSkills.skill);
+          adjustment = normalizeAdjustment(adjustment);
+          adjustedWeights[index] = parseFloat((weight * (adjustment / 1)).toFixed(2));
+          break;
+        case 6:
+          adjustment = (batsmanSkills.skill + batsmanSkills.aggression * 1.25 - bowlerSkills.skill);
+          adjustment = normalizeAdjustment(adjustment);
+          adjustedWeights[index] = parseFloat((weight * (adjustment / 1)).toFixed(2));
+          break;
+      }
+      //adjustedWeights[index] = parseFloat((weight * (adjustment / 1)).toFixed(2));
     });
-    console.log(adjustedWeights);
+    //console.log(adjustedWeights);
 
     var result = getRandomItem(possibleOutcomes, adjustedWeights);
      
