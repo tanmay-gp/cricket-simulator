@@ -16,6 +16,13 @@
     <section id="cs-playfield" style="display: none;">
       <button id="cs-play" style="display: none;" onclick="match.play()">BOWL</button>
       Press 'space' to bowl
+      <select id="cs-select-mode">
+        <option value="0">EXTRA_DEFENSIVE</option>
+        <option value="1">DEFENSIVE</option>
+        <option value="2" selected="true">NORMAL</option>
+        <option value="3">AGGRESSIVE</option>
+        <option value="4">ALL_OUT_ATTACK</option>
+      </select>
       <div id="cs-playfield-over-details" style="height: 200px; overflow: scroll;">
         
       </div>

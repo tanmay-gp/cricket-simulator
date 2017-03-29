@@ -216,6 +216,8 @@ function Match(ground, team1, team2) {
 
   var previousBowler = null;
 
+  var AGGRESSION_MODE = 2;
+
   var viewModel = new ViewModel();
 
   function toss(team, call) {
@@ -258,6 +260,7 @@ function Match(ground, team1, team2) {
     viewModel.enablePlayField();
     viewModel.enablePlayButton();
     viewModel.bindKeys(play);
+    viewModel.bindModeSelect(setAggressionMode);
   }
 
   function selectBowler() {
@@ -328,12 +331,18 @@ function Match(ground, team1, team2) {
     selectBowler();
   }
 
+  function setAggressionMode(aggressionMode) {
+    if (aggressionMode > -1 && aggressionMode < 5) {
+      AGGRESSION_MODE = aggressionMode;
+    }
+  }
+
   function bowlABall() {
     ball.count++;
     ball.bowler.matchState.ballsBowled++;
     teamBatting.matchState.ballsBowled++;
 
-    var result = getAResultForBall(2, ball.batsman1.batting, ball.bowler.bowling);
+    var result = getAResultForBall(AGGRESSION_MODE, ball.batsman1.batting, ball.bowler.bowling);
     
     if (result !== 7) {
       ball.runs = result;
@@ -513,11 +522,31 @@ function ViewModel() {
     };
   }
 
+  function bindModeSelect(callback) {
+    document.getElementById("cs-select-mode").addEventListener("change", function(event) {
+      callback(parseInt(event.currentTarget.value));
+    });
+  }
+
   function updatePlayingPlayersInfo(ball, teamBatting, teamBowling) {
-    document.getElementById("cs-playfield-scorecard").innerHTML = "<h3>Score: </h3> <br/>" + 
+    /**
+     * Printable batsmen's stats block
+     */
+    var batsmanPrintable = "<h3>Scorecard:</h3> <br/>";
+
+    for (var i = 0; i < 11; i++) {
+      batsmanPrintable += teamBatting.players[i].getPrintableBatsmanStats() + "<br/>";
+    }
+
+    document.getElementById("cs-playfield-scorecard").innerHTML = batsmanPrintable + 
+                                                                  "<h3>Score: </h3> <br/>" + 
                                                                   teamBatting.name + " " +
                                                                   teamBatting.getPrintableScore();
 
+
+    /**
+     * Printable bowlers' stats block
+     */
     var bowlerPrintable = "<h3>Bowlers:</h3> <br/>";
 
     for (var i = 0; i < 5; i++) {
@@ -551,6 +580,7 @@ function ViewModel() {
     enablePlayField: enablePlayField,
     enablePlayButton: enablePlayButton,
     bindKeys: bindKeys,
+    bindModeSelect: bindModeSelect,
     updatePlayingPlayersInfo: updatePlayingPlayersInfo,
     printBall: printBall
   };
