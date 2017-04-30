@@ -1,0 +1,50 @@
+<html>
+  <title> My First Cricket Match Simulation </title>
+  <head>
+    <script type="text/javascript" src="Player.js"></script>
+    <script type="text/javascript" src="Team.js"></script>
+    <script type="text/javascript" src="Match.js"></script>
+    <script type="text/javascript" src="Ball.js"></script>
+    <script type="text/javascript" src="ViewModel.js"></script>
+    <script type="text/javascript" src="game.js"></script>
+  </head>
+  <body>
+    You're playing as INDIA.
+    <br/>
+    <section id="cs-toss-controls">
+      Time for a toss.<br/>
+      Choose an option: <br/>
+      <button type="button" onclick="match.start(team_india, 0)">HEADS</button>
+      <button type="button" onclick="match.start(team_india, 1)">TAILS</button>
+    </section>
+
+    <span id="cs-toss-info"></span>
+
+    <section id="cs-playfield" style="display: none;">
+      <button id="cs-play" style="display: none;" onclick="match.play()">BOWL</button>
+      Press 'space' to bowl
+      <select id="cs-select-mode">
+        <option value="0">EXTRA_DEFENSIVE</option>
+        <option value="1">DEFENSIVE</option>
+        <option value="2" selected="true">NORMAL</option>
+        <option value="3">AGGRESSIVE</option>
+        <option value="4">ALL_OUT_ATTACK</option>
+      </select>
+      <div id="cs-playfield-over-details" style="height: 200px; overflow: scroll;">
+        
+      </div>
+
+      <div id="cs-playfield-scorecard">
+        
+      </div>
+
+      <div id="cs-playfield-batsmen-details">
+        
+      </div>
+
+      <div id="cs-playfield-bowler-details">
+        
+      </div>
+    </section>
+  </body>
+</html>
