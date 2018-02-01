@@ -1,3 +1,11 @@
+/**
+ * Match class
+ * @param ground The ground object on which the match is being played on
+ * @param team1 1st team
+ * @param team2 2nd team
+ * @returns {{toss: toss, tossAction: tossAction, play: play, start: start, selectBowler: selectBowler}}
+ * @constructor
+ */
 function Match(ground, team1, team2) {
   var HEADS = 0;
   var TAILS = 1;
@@ -16,10 +24,7 @@ function Match(ground, team1, team2) {
   var innings = 1;  // values 1 & 2
 
   var overs = new Array(50);  // 2-d store of balls
-  for (var i = 0; i < 50; i++) {
-    overs[i] = new Array(6);
-  };
-
+  
   var ball = {
     batsman1: null,
     batsman2: null,
@@ -28,12 +33,25 @@ function Match(ground, team1, team2) {
     runs: 0,
     isWicket: false
   };
-
+  
   var previousBowler = null;
-
-  var AGGRESSION_MODE = 2;
-
+  
+  var EXTRA_DEFENSIVE = 0;
+  var DEFENSIVE = 1;
+  var NORMAL = 2;
+  var AGGRESSIVE = 3;
+  var ALL_OUT_ATTACK = 4;
+  
+  var AGGRESSION_MODE = NORMAL;
+  
   var viewModel = new ViewModel();
+  
+  // Init
+  (function () {
+    for (var i = 0; i < 50; i++) {
+      overs[i] = new Array(6);
+    }
+  })();
 
   function toss(team, call) {
     var winningCall = Math.random(0,1) < 0.5 ? HEADS : TAILS;
@@ -60,7 +78,7 @@ function Match(ground, team1, team2) {
       startAnOver();
     }
 
-    if (ball.count < (50 * 6)) {
+    if (ball.count < (50 * 6) && teamBatting.matchState.wickets < 10) {
       bowlABall();
     }
 
@@ -204,12 +222,6 @@ function Match(ground, team1, team2) {
   }
 
   function getAResultForBall(aggressionMode, batsmanSkills, bowlerSkills) {
-    var EXTRA_DEFENSIVE = 0;
-    var DEFENSIVE = 1;
-    var NORMAL = 2;
-    var AGGRESSIVE = 3;
-    var ALL_OUT_ATTACK = 4;
-
     var results = new Array(5);
 
     var possibleOutcomes = [0, 1, 2, 3, 4, 6, 7];
